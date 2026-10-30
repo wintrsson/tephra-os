@@ -1,5 +1,8 @@
 # Tephra changelog
 
+## v0.99.77
+- Tephra now creates all three of its KDE window rules for Steam by itself at start-up (the toast rule it already made, plus "Hide Steam behind Tephra" and "Hide Steam Startup Windows"). Before, the last two only came from a file that the installer never copied, so a new install let Steam windows show over Tephra. Rules already on a PC are kept and only fixed if they differ.
+
 ## v0.99.76
 - A game's page now takes its colours from the game's cover on every theme. On Aero, Channels and Sleek the whole sky behind the page is a pale version of the cover's colour (it was the theme's own blue and green), and on Aero the chosen button and the section headings use it too.
 - Fix: a game whose cover was fetched after its page opened kept a made-up colour (often green) instead of the cover's. The colours are now worked out again once the cover arrives.

@@ -80,11 +80,14 @@ static func _groups(file: String, kind: String) -> Array:
 				out.append(name)
 	return out
 
-# A KWin rule for Steam's toast window ("notificationtoasts_..."): fully see-through, below
-# every other window, never focused, and kept out of the task switcher.
+# KWin rules for Steam (~/.config/kwinrulesrc), written here so a new PC has them without copying any file:
+#   - the toast window ("notificationtoasts_..."): fully see-through, below every other window, never focused, and
+#     kept out of the task switcher (first in the list, so it wins over any other Steam rule);
+#   - "Hide Steam behind Tephra": every Steam window stays below Tephra, out of the taskbar and the switcher, and
+#     cannot steal the focus (home.gd's steam_rule() switches this one off while an install needs its popup);
+#   - "Hide Steam Startup Windows": the small window Steam shows while it starts.
 static func _toast_rule() -> void:
-	var g := [TOAST_RULE]
-	var props := {
+	var changed := _ensure_rule(TOAST_RULE, {
 		"Description": "Tephra: hide Steam notification toasts",
 		"wmclass": "steam", "wmclassmatch": "2", "wmclasscomplete": "false",
 		"title": "notificationtoasts", "titlematch": "2",
@@ -95,23 +98,42 @@ static func _toast_rule() -> void:
 		"skiptaskbar": "true", "skiptaskbarrule": "2",
 		"skipswitcher": "true", "skipswitcherrule": "2",
 		"skippager": "true", "skippagerrule": "2",
+	}, true)
+	var hide := {
+		"below": "true", "belowrule": "2",
+		"fsplevel": "4", "fsplevelrule": "2",
+		"skipswitcher": "true", "skipswitcherrule": "2",
+		"skiptaskbar": "true", "skiptaskbarrule": "2",
 	}
+	var behind := hide.duplicate()
+	behind.merge({"Description": "Hide Steam behind Tephra", "wmclass": "^[Ss]team$", "wmclassmatch": "3"})
+	var startup := hide.duplicate()
+	startup.merge({"Description": "Hide Steam Startup Windows", "title": "Steam", "titlematch": "1"})
+	changed = _ensure_rule("4045d3eb-fa74-42e5-97eb-743f5622ba7f", behind, false) or changed
+	changed = _ensure_rule("ecbc4e87-e358-4371-9302-896086d486e5", startup, false) or changed
+	if changed:
+		OS.execute("qdbus6", ["org.kde.KWin", "/KWin", "reconfigure"], [])
+
+## Makes sure one rule exists with these settings and is in KWin's list (first or last). True if anything changed.
+static func _ensure_rule(id: String, props: Dictionary, first: bool) -> bool:
+	var g := [id]
 	var changed := false
 	for k in props:
 		if _kr("kwinrulesrc", g, k) != props[k]:
 			_kw("kwinrulesrc", g, k, props[k])
 			changed = true
-	var rules := _kr("kwinrulesrc", ["General"], "rules")
 	var list: Array = []
-	for r in rules.split(",", false):
+	for r in _kr("kwinrulesrc", ["General"], "rules").split(",", false):
 		list.append(r)
-	if not list.has(TOAST_RULE):
-		list.push_front(TOAST_RULE)  # first, so it wins over any other Steam rule
+	if not list.has(id):
+		if first:
+			list.push_front(id)
+		else:
+			list.append(id)
 		_kw("kwinrulesrc", ["General"], "rules", ",".join(list))
 		_kw("kwinrulesrc", ["General"], "count", str(list.size()))
 		changed = true
-	if changed:
-		OS.execute("qdbus6", ["org.kde.KWin", "/KWin", "reconfigure"], [])
+	return changed
 
 ## Mutes every sound stream that belongs to the Steam client (its notification and UI sounds).
 ## Games are separate programs, so their sound is never touched. Call it every few seconds.

@@ -53,7 +53,7 @@ cd ~/tephra && ./install.sh
 
 - `shell/tephra-shell/`: the Godot 4.7 project. `home.gd` is the main shell, and `VERSION` is bumped every release.
 - `tools/check.sh` compiles every script headless. `tools/ui-test.sh` runs Tephra under Xvfb and takes screenshots.
-- `configs/` holds the autostart entries, udev rules and system files. `install.sh` sets these up.
+- `configs/` holds the autostart entries, udev rules and system files, which `install.sh` sets up. Tephra writes its own KDE window rules for Steam at start-up (`steam_quiet.gd`).
 
 ## Licence
 
