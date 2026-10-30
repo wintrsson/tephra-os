@@ -69,5 +69,6 @@ processes don't survive between tool calls.
 
 `tools/ui-test.sh <plan.json> <outdir>` runs the real Tephra under Xvfb with software rendering on an empty data folder, presses keys
 and saves screenshots (the plan format is in `tools/ui_shot.gd`; needs `xvfb-run` and ImageMagick to look at several shots at once).
-Use it to actually look at a screen you built, not only to compile it. No controller, audio, Steam or kscreen-doctor there, so
+Use it to actually look at a screen you built, not only to compile it. For README pictures, `tools/demo_games.py <dir>` makes
+made-up games with original covers: pass `HOMESEED=<dir>` and its printed `home_pinned` list in `PRESEED` (`docs/` holds the results). No controller, audio, Steam or kscreen-doctor there, so
 those parts show their "not available" states.

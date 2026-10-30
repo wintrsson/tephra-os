@@ -4,6 +4,8 @@
 
 ![Tephra's home screen](docs/home.jpg)
 
+<sub>The games in these pictures are made up for the screenshots; Tephra shows your own.</sub>
+
 ## Install
 
 You need **Arch Linux** (or an Arch-based distro) with **KDE Plasma on Wayland**. Then run one command:
@@ -33,6 +35,10 @@ cd ~/tephra && ./install.sh
 - **PS2 games** through PCSX2, with cover art and RetroAchievements next to Steam's.
 - **Controllers.** DualSense (lightbar and player lights), Xbox and Switch layouts, plus an on-screen keyboard you can also type into from your phone.
 - **Screenshots and recording** from the controller's touchpad.
+
+![The Library and the control center](docs/screens.jpg)
+
+### Themes
 
 ![Eight of the themes](docs/themes.jpg)
 
