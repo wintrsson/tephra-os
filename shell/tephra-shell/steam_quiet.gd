@@ -21,6 +21,7 @@ static func apply() -> void:
 		return
 	_quiet_notifications()
 	_toast_rule()
+	_quiet_boot()
 	var f := FileAccess.open(mark, FileAccess.WRITE)
 	if f != null:
 		f.close()
@@ -40,6 +41,28 @@ static func _kr(file: String, groups: Array, key: String) -> String:
 	var out: Array = []
 	OS.execute("kreadconfig6", args, out)
 	return (str(out[0]) if not out.is_empty() else "").strip_edges()
+
+# The seconds between the boot splash and Tephra's own window, while KDE's desktop is still starting: KDE's own splash
+# screen is switched off and the desktop wallpaper is a plain black. Done once (the black wallpaper leaves a note in
+# ~/.config/tephra, which uninstall.sh uses to put KDE's normal wallpaper plugin back; the picture itself is kept
+# in KDE's settings). The wallpaper is only changed from a running desktop, so this waits for the first start.
+const BLACK_WALLPAPER_JS := "desktops().forEach(function (d) { d.wallpaperPlugin = 'org.kde.color'; d.currentConfigGroup = ['Wallpaper', 'org.kde.color', 'General']; d.writeConfig('Color', '0,0,0'); });"
+
+static func _quiet_boot() -> void:
+	_kw("ksplashrc", ["KSplash"], "Engine", "none")
+	_kw("ksplashrc", ["KSplash"], "Theme", "None")
+	var dir := OS.get_environment("HOME") + "/.config/tephra"
+	var note := dir + "/black-wallpaper"
+	if FileAccess.file_exists(note):
+		return
+	var args := ["--user", "call", "org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell", "evaluateScript", "s", BLACK_WALLPAPER_JS]
+	if OS.execute("busctl", args, []) != 0:
+		return  # no desktop to talk to yet: tried again at the next start
+	DirAccess.make_dir_recursive_absolute(dir)
+	var f := FileAccess.open(note, FileAccess.WRITE)
+	if f != null:
+		f.store_string("Tephra made the desktop wallpaper black. Delete this file to have it done again.\n")
+		f.close()
 
 # KDE notification settings (~/.config/plasmanotifyrc): no popups, sounds or history entries
 # from Steam, and no popups from KDE's power manager (Tephra warns about the battery itself).

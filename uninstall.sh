@@ -17,6 +17,15 @@ rm -f "$HOME/.config/autostart/tephra.desktop" "$HOME/.config/autostart/steam-si
 sudo rm -f /etc/sddm.conf.d/tephra-autologin.conf /etc/udev/rules.d/70-tephra-*.rules /etc/modules-load.d/tephra-uinput.conf
 sudo udevadm control --reload 2>/dev/null || true
 
+# Tephra made the desktop wallpaper black and switched KDE's splash screen off: put both back.
+if [ -f "$HOME/.config/tephra/black-wallpaper" ]; then
+  busctl --user call org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell evaluateScript s \
+    "desktops().forEach(function (d) { d.wallpaperPlugin = 'org.kde.image'; });" >/dev/null 2>&1 \
+    && rm -f "$HOME/.config/tephra/black-wallpaper" || echo "Couldn't reach the desktop: set your wallpaper again in System Settings."
+fi
+kwriteconfig6 --file ksplashrc --group KSplash --key Engine KSplashQML 2>/dev/null
+kwriteconfig6 --file ksplashrc --group KSplash --key Theme org.kde.breeze.desktop 2>/dev/null
+
 if ask "Also delete Tephra's settings (~/.config/tephra)?"; then
   rm -rf "$HOME/.config/tephra" "$HOME/.local/share/godot/app_userdata/Tephra Shell"
 fi

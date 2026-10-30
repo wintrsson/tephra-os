@@ -1,5 +1,8 @@
 # Tephra changelog
 
+## v0.99.78
+- Less desktop on the way in: on the first start Tephra turns KDE's own splash screen off and makes the desktop wallpaper plain black, so the moment between the boot picture and Tephra shows black instead of your wallpaper. `uninstall.sh` puts KDE's normal wallpaper and splash back.
+
 ## v0.99.77
 - Tephra now creates all three of its KDE window rules for Steam by itself at start-up (the toast rule it already made, plus "Hide Steam behind Tephra" and "Hide Steam Startup Windows"). Before, the last two only came from a file that the installer never copied, so a new install let Steam windows show over Tephra. Rules already on a PC are kept and only fixed if they differ.
 
