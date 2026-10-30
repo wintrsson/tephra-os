@@ -1,0 +1,18 @@
+Fonts used by Tephra's themes. All are free to use and share, including in a public release.
+
+rounded.ttf  M PLUS Rounded 1c (Medium, Latin subset)   Channels   SIL Open Font License 1.1  (c) The M+ Project Authors
+arimo.ttf    Arimo (Regular)                              PS2        Apache License 2.0         (c) Google
+hind.ttf     Hind (Medium)                                Frutiger   SIL Open Font License 1.1  (c) Indian Type Foundry
+exo2.ttf     Exo 2 (Medium)                               Sleek      SIL Open Font License 1.1  (c) Natanael Gama
+barlow.ttf   Barlow (Medium)                              Volcanic   SIL Open Font License 1.1  (c) Jeremy Tribby
+bungee.ttf   Bungee (Regular)                             Neon Coast SIL Open Font License 1.1  (c) The Bungee Project Authors
+rubikmono.ttf Rubik Mono One (Regular)                    Neon Coast SIL Open Font License 1.1  (c) The Rubik Project Authors
+pacifico.ttf  Pacifico (Regular)                         Miami      SIL Open Font License 1.1  (c) The Pacifico Project Authors
+cinzel.ttf    Cinzel (Medium)                            Gothic     SIL Open Font License 1.1  (c) The Cinzel Project Authors
+elite.ttf     Special Elite (Regular)                    Mold       Apache License 2.0         (c) Astigmatic
+pressstart.ttf Press Start 2P (Regular)                    Retro      SIL Open Font License 1.1  (c) The Press Start 2P Project Authors
+vt323.ttf     VT323 (Regular)                            Temple     SIL Open Font License 1.1  (c) The VT323 Project Authors
+lora.ttf      Lora (variable)                             Wood       SIL Open Font License 1.1  (c) The Lora Project Authors
+
+Downloaded from Google Fonts (fonts.google.com). Full license texts: https://openfontlicense.org and
+https://www.apache.org/licenses/LICENSE-2.0

@@ -1,0 +1,45 @@
+[08f6be45-cb98-4634-8ab6-cc308e85f17d]
+Description=Hide Steam
+Enabled=false
+below=true
+belowrule=2
+fsplevel=4
+fsplevelrule=2
+minimize=true
+minimizerule=2
+skipswitcher=true
+skipswitcherrule=2
+skiptaskbar=true
+skiptaskbarrule=2
+wmclass=^(steam|steamwebhelper)$
+wmclassmatch=3
+
+[4045d3eb-fa74-42e5-97eb-743f5622ba7f]
+Description=Hide Steam behind Tephra
+below=true
+belowrule=2
+fsplevel=4
+fsplevelrule=2
+skipswitcher=true
+skipswitcherrule=2
+skiptaskbar=true
+skiptaskbarrule=2
+wmclass=^[Ss]team$
+wmclassmatch=3
+
+[General]
+count=3
+rules=08f6be45-cb98-4634-8ab6-cc308e85f17d,4045d3eb-fa74-42e5-97eb-743f5622ba7f,ecbc4e87-e358-4371-9302-896086d486e5
+
+[ecbc4e87-e358-4371-9302-896086d486e5]
+Description=Hide Steam Startup Windows
+below=true
+belowrule=2
+fsplevel=4
+fsplevelrule=2
+skipswitcher=true
+skipswitcherrule=2
+skiptaskbar=true
+skiptaskbarrule=2
+title=Steam
+titlematch=1

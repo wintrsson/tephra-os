@@ -1,0 +1,4 @@
+[Desktop Entry]
+Type=Application
+Name=Tephra
+Exec=sh -c 'exec "$HOME/tephra/shell/tephra-shell/tephra-run.sh"'

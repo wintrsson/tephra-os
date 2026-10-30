@@ -1,0 +1,6 @@
+gamescope-session-steam-git
+lib32-nvidia-580xx-utils
+nvidia-580xx-dkms
+nvidia-580xx-utils
+yay-bin
+yay-bin-debug

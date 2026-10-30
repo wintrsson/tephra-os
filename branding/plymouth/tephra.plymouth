@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Tephra
+Description=Tephra boot logo
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/tephra
+ScriptFile=/usr/share/plymouth/themes/tephra/tephra.script

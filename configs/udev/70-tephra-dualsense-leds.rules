@@ -1,0 +1,6 @@
+# Tephra: let the home screen set DualSense lightbar colour and player lights
+# without root. Only touches the controller's LED files.
+# Install: sudo cp 70-tephra-dualsense-leds.rules /etc/udev/rules.d/
+#          sudo udevadm control --reload   (then reconnect the controller)
+ACTION=="add", SUBSYSTEM=="leds", KERNEL=="input*:rgb:indicator", RUN+="/bin/chmod 0666 /sys%p/brightness /sys%p/multi_intensity"
+ACTION=="add", SUBSYSTEM=="leds", KERNEL=="input*:white:player-*", RUN+="/bin/chmod 0666 /sys%p/brightness"

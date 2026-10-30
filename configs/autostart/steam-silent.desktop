@@ -1,0 +1,4 @@
+[Desktop Entry]
+Type=Application
+Name=Steam (background)
+Exec=steam -silent -cef-disable-gpu -cef-disable-gpu-compositing
