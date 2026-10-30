@@ -11,11 +11,20 @@ Console-style Linux shell in Godot 4.7 (GDScript). See `README.md` for what it i
 - The owner has said yes to pushing finished releases straight to the update branch: `git push origin HEAD:<update branch>`,
   fast-forward only, never force. Push the session branch too.
 
+## Public repo
+`wintrsson/tephra-os` is the public copy. It gets snapshots only, never this repo's history (that has personal details):
+after a release, run `tools/publish-public.sh` from the update branch. It refuses if it finds a personal detail, writes
+`UPDATE_BRANCH` = `main` into the snapshot so public installs update from there, and commits as the owner's GitHub
+noreply address. Never put the owner's name, username, email, Steam IDs or hardware into files or commit messages.
+`install.sh` / `uninstall.sh` at the root are what new users run (Arch + KDE); keep their package list in step with
+the programs Tephra calls.
+
 ## Every release
 1. Bump `shell/tephra-shell/VERSION` (patch number: 0.99.57 -> 0.99.58).
 2. Add a `## vX` entry at the top of `CHANGELOG.md` in plain words: what the player notices, not the code.
 3. Commit subject: `vX: <what changed>`.
 4. Run `tools/check.sh` (headless Godot compiles every script) and fix anything before pushing.
+5. Run `tools/publish-public.sh` once the update branch has it.
 
 ## Code
 - `home.gd` is the main shell; screens are separate scripts set up from it. It is being split one system at a time

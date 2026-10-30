@@ -20,6 +20,7 @@ mkdir -p "$W/home" "$W/data"
 cp -r "$ROOT/shell/tephra-shell" "$W/p"
 cp "$ROOT/tools/ui_shot.gd" "$W/p/ui_shot.gd"
 sed -i 's|^BootOverlay=.*|&\nUiShot="*res://ui_shot.gd"|' "$W/p/project.godot"
+"$GODOT" --headless --path "$W/p" --import >/dev/null 2>&1   # a fresh copy has no import cache: the main scene would not load
 if [ -n "${PRESEED:-}" ]; then
   mkdir -p "$W/data/godot/app_userdata/Tephra Shell"
   printf '%s' "$PRESEED" > "$W/data/godot/app_userdata/Tephra Shell/settings.json"

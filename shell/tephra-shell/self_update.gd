@@ -9,7 +9,7 @@ extends RefCounted
 ## the launcher still finds it after a crash or a hang, it puts the old files back and writes update-failed. That version
 ## is not offered again; the next one after it is.
 
-const BRANCH := "claude/project-thread-kou0vz"
+const BRANCH := "claude/project-thread-kou0vz"   # the development copy; a public copy names its own in UPDATE_BRANCH
 const SHELL := "shell/tephra-shell"
 
 static var state := "idle"     # "idle", "checking", "ready" (a newer version is there), "current", "offline", "installing", "failed"
@@ -51,6 +51,12 @@ static func rollback_notice() -> String:
 		f.close()
 	return "Tephra %s didn't start, so Tephra went back to %s. It won't offer %s again." % [fv, local_version(), fv]
 
+## The branch updates come from: the one-line UPDATE_BRANCH file next to VERSION if there is one (the public copy has
+## "main"), else BRANCH.
+static func branch() -> String:
+	var b := FileAccess.get_file_as_string("res://UPDATE_BRANCH").strip_edges() if FileAccess.file_exists("res://UPDATE_BRANCH") else ""
+	return b if b != "" else BRANCH
+
 static func repo() -> String:
 	return ProjectSettings.globalize_path("res://").path_join("../..").simplify_path()
 
@@ -84,7 +90,7 @@ static func check(home, done := Callable()) -> void:
 	state = "checking"
 	var box := {}
 	box["id"] = home._work(func() -> void:
-		var r := _git(["fetch", "-q", "origin", BRANCH])
+		var r := _git(["fetch", "-q", "origin", branch()])
 		var result := "offline"
 		var ver := ""
 		if int(r[0]) == 0:
@@ -112,7 +118,7 @@ static func install(home, done := Callable()) -> void:
 	home.fade_out(0.6)  # the screen fades to black while it installs; Tephra comes back faded in
 	var box := {}
 	box["id"] = home._work(func() -> void:
-		var ok := int(_git(["fetch", "-q", "origin", BRANCH])[0]) == 0
+		var ok := int(_git(["fetch", "-q", "origin", branch()])[0]) == 0
 		if ok:
 			_git(["add", "-A"])
 			_git(["commit", "-qm", "Snapshot before " + ("v" + ver if ver != "" else "update")])

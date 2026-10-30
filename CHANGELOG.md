@@ -1,5 +1,10 @@
 # Tephra changelog
 
+## v0.99.72
+- Tephra is public at github.com/wintrsson/tephra-os, under the GPL-3.0 licence, with a one-command installer (`install.sh`), an uninstaller and a new README with theme screenshots.
+- Personal details are gone from Tephra's files: no username in the configs, and the developer menu's "Add my Steam ID as family member" button is removed.
+- Public installs update from the public repo (the new `UPDATE_BRANCH` file). This PC keeps updating as before.
+
 ## v0.99.71
 - Library: a non-Steam game's page has "Remove from Library". It asks first, closes Steam if it's open (Steam rewrites its list when it closes), and takes the game out of Steam's list of non-Steam games. The game's own files stay on the drive. Not for PS2 games.
 
