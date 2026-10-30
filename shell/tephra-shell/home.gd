@@ -68,7 +68,6 @@ var title_area: Control
 var shadows: Array = []
 var album  # album.gd: the screenshot album
 var mods  # mods.gd: the mod manager
-var page_view  # page_view.gd: Tephra's own drawing of the browser page
 var shines: Array = []
 var tile_game: Array = []   # per tile: index into games, or -1 (Home, Library)
 var tiles: Array = []
@@ -451,10 +450,6 @@ func _ready() -> void:
 	add_child(mods)
 	cc.mods_requested.connect(_open_mods)
 	mods.closed.connect(_on_mods_closed)
-	page_view = preload("res://page_view.gd").new()
-	page_view.setup(self)
-	add_child(page_view)
-	page_view.closed.connect(_on_page_view_closed)
 	add_child.call_deferred(preload("res://pad_gate.gd").new())  # last child: sees input first
 	cc.theme_requested.connect(apply_theme)
 	album.closed.connect(_on_album_closed)
@@ -3938,8 +3933,6 @@ func _launch(force_gi := -1, force_game := {}) -> void:
 	# the game is shut down behind it (see _quit_game), so nobody waits on a "Closing" screen.
 	_tl("game on screen")
 	_lag_probe(id)
-	if g.get("browser", false) and not g.get("plain", false) and bool(Settings.get_value("browser_page_mode", true)):
-		_browser_auto_page()
 	while _game_running(id) and not _quit_now:
 		for _k in 4:
 			await get_tree().create_timer(0.25).timeout
@@ -4233,9 +4226,6 @@ func _overlay_open(mode: String) -> void:
 	browser.halt()  # the pointer stops while a menu is open
 	if _in_overlay:
 		# Already paused: just change what is showing.
-		if page_view.is_open:
-			_pv_quiet = true  # Page view sits above everything: it must go, or the new menu would open hidden behind it
-			page_view.close()
 		if cc.is_open:
 			cc.close(true)
 		_overlay_mode = mode
@@ -4293,8 +4283,6 @@ func _overlay_open(mode: String) -> void:
 		_show_overlay_home()
 	elif mode == "tabs":
 		browser_tabs.open(_tabs_seen.get("tabs", []), int(_tabs_seen.get("current", 0)))
-	elif mode == "page":
-		_open_page_view()
 	elif mode == "kbd":
 		pass  # the caller opens the keyboard over the frozen page
 	else:
@@ -4485,8 +4473,6 @@ func _overlay_close() -> void:
 			album.close()
 		if mods.is_open:
 			mods.close()
-		if page_view.is_open:
-			page_view.close()
 		launch_overlay.visible = true
 		launch_overlay.modulate.a = 1.0
 		visible = false
@@ -4508,8 +4494,6 @@ func _overlay_close() -> void:
 		album.close()
 	if mods.is_open:
 		mods.close()
-	if page_view.is_open:
-		page_view.close()
 	if _overlay_mode == "home":
 		# Fade to black first, so going back into the game is smooth instead of a cut.
 		launch_overlay.visible = true
@@ -4560,8 +4544,6 @@ func _overlay_reset() -> void:
 		album.close()
 	if mods.is_open:
 		mods.close()
-	if page_view.is_open:
-		page_view.close()
 	_game_started = false
 	_game_id = ""
 	_in_overlay = false
@@ -4660,32 +4642,6 @@ func open_nexus_for(title: String) -> void:
 	var g: Dictionary = browser.game_entry(_nexus_url(title), true)
 	g["pattern"] = browser.PATTERN
 	_launch(-1, g)
-
-## The browser opens straight into Tephra's Page view: Firefox runs hidden behind it and is never shown.
-func _browser_auto_page() -> void:
-	await get_tree().create_timer(2.5).timeout
-	if _game_id == browser.ID and _game_started and not _in_overlay and not _quit_now:
-		_overlay_open("page")
-
-func _open_page_view() -> void:
-	page_view.layer = 97 if _in_overlay else 82
-	page_view.open()
-
-var _pv_quiet := false
-
-func _on_page_view_closed(to_live: bool) -> void:
-	if _pv_quiet:
-		_pv_quiet = false
-		return
-	if not _in_overlay or _overlay_busy:
-		return
-	if to_live:
-		_overlay_close()
-	else:
-		await get_tree().create_timer(0.2).timeout
-		if _in_overlay and not cc.is_open and not page_view.is_open:
-			_overlay_mode = "cc"  # from here on it is the ordinary control center: closing it, Mods, Album... all come back as usual
-			_open_cc()
 
 func _open_mods() -> void:
 	mods.layer = 97 if _in_overlay else 82
@@ -5073,7 +5029,7 @@ func _player_colour_check() -> void:
 	if not _player_colour_pending or launching or input_locked or _in_overlay or _overlay_busy:
 		return
 	if keyboard.is_open or game_menu.is_open or cc.is_open or library.is_open or album.is_open or mods.is_open \
-			or page_view.is_open or profile_screen.is_open or settings_screen.is_open or top_menu.is_open or setup_screen.is_open or in_details:
+			or profile_screen.is_open or settings_screen.is_open or top_menu.is_open or setup_screen.is_open or in_details:
 		return
 	_player_colour_pending = false
 	var pads := Input.get_connected_joypads().filter(func(p): return TephraGlyphs.family_for_device(p) != "")
@@ -5144,9 +5100,6 @@ func _on_step(dir: Vector2i, n := 1) -> void:
 	if mods.is_open and not cc.is_open:
 		mods.move(dir)
 		return
-	if page_view.is_open and not cc.is_open:
-		page_view.move(dir)
-		return
 	if album.is_open and not cc.is_open:  # the control center on top of the Album gets the pad, not the Album
 		album.move(dir)
 		return
@@ -5209,7 +5162,7 @@ func _on_fast_step(dir: Vector2i, n: int) -> void:
 ## The Channels Home is showing and nothing is open on top of it.
 func _channels_active() -> bool:
 	return channels != null and not (keyboard.is_open or game_menu.is_open or color_picker.is_open or hdr_calibration.is_open \
-		or controller_test.is_open or scene_test.is_open or album.is_open or mods.is_open or page_view.is_open or profile_screen.is_open or settings_screen.is_open \
+		or controller_test.is_open or scene_test.is_open or album.is_open or mods.is_open or profile_screen.is_open or settings_screen.is_open \
 		or top_menu.is_open or setup_screen.is_open or cc.is_open or library.is_open or profile_focus or _placing_perf)
 
 # ---------- Profile (press Up from the games) ----------
@@ -6408,8 +6361,6 @@ func _toggle_cc() -> void:
 					cc.close()
 				else:
 					_open_cc()
-			elif _in_overlay and _overlay_mode == "page" and page_view.is_open:
-				page_view.close()  # PS over the page: the control center (its Browser card has Close browser)
 			elif _in_overlay:
 				_overlay_close()
 			else:
@@ -6524,8 +6475,6 @@ func _go_home() -> void:
 		album.close()
 	if mods.is_open:
 		mods.close()
-	if page_view.is_open:
-		page_view.close()
 	if profile_screen.is_open:
 		profile_screen.close()
 	if settings_screen.is_open:
@@ -6580,8 +6529,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	if cc.handle_input(event):
 		return
 	if not cc.is_open and mods.handle_input(event):
-		return
-	if not cc.is_open and page_view.handle_input(event):
 		return
 	if not cc.is_open and album.handle_input(event):
 		return
@@ -7078,13 +7025,6 @@ func _browser_action(action: String, arg: String) -> void:
 			browser_keyboard(false)
 		"resume":
 			_overlay_close()
-		"page":
-			if cc.is_open:
-				cc.close(true)
-			_open_page_view()
-		"mode":
-			Settings.set_value("browser_page_mode", not bool(Settings.get_value("browser_page_mode", true)))
-			notify("Tephra web overlay is %s. It applies the next time the browser opens." % ("on" if bool(Settings.get_value("browser_page_mode", true)) else "off"), "info")
 		"tabs":
 			if cc.is_open:
 				cc.close(true)

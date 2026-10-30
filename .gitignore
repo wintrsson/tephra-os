@@ -2,3 +2,13 @@
 .godot/
 # Never commit secrets
 *.cfg
+# Browser and desktop data never belongs here
+*.jsonlz4
+*.sqlite
+sessionstore*
+cookies*
+profile/
+.Xauthority
+.xsession-errors
+.Xresources
+.xinitrc

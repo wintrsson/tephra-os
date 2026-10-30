@@ -1,5 +1,9 @@
 # Tephra changelog
 
+## v0.99.80
+- The web overlay is gone. The Browser card now opens plain Firefox that you drive with the controller: stick for the pointer, Cross to click, Square to type. The YouTube, Netflix, Twitch and Google shortcuts and the "Web overlay" switch are removed; use "Go to an address or search" (searches use DuckDuckGo).
+- The repository ignores browser tabs, cookies and desktop session files, so none of them can be added by accident.
+
 ## v0.99.79
 - Brightness in the control center now works like Volume: press A on the card and a small pop-up opens with a bar. Left and Right change it in steps of 5%, Back closes it. Up and Down no longer change brightness.
 - Settings is tidier. System keeps Tephra's updates, time and units, power, help and this PC. Everything about games (how they start, Steam, PS2, RetroAchievements) moved to a new Games tab. "Dim the screen when idle" now sits under Power, and the old "save new files to Downloads" note is gone.

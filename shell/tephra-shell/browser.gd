@@ -9,12 +9,11 @@ extends Node
 ##   L1 / R1    = the tab on the left / right (the tab list is in the menu: PS > Browser > Tabs)
 ##   PS          = control center (Close the browser is there, like Close game)
 ## Firefox keeps its own settings in ~/.local/share/tephra/browser, apart from any Firefox you use on the desktop,
-## so logins (YouTube, Netflix...) stay between visits. Netflix and other DRM video need Firefox's Widevine,
+## so logins stay between visits. DRM video needs Firefox's Widevine,
 ## which it downloads by itself the first time (it is switched on in the settings below).
 
 const Settings = preload("res://settings.gd")
-const HOME_URL := "https://www.youtube.com/tv"
-const SITES := [["YouTube", "https://www.youtube.com/tv"], ["Netflix", "https://www.netflix.com"], ["Twitch", "https://www.twitch.tv"], ["Google", "https://www.google.com"]]
+const HOME_URL := "about:blank"
 const ID := "browser"
 const PATTERN := "[t]ephra/browser"  # how its processes are found (the profile folder is on its command line)
 const SPEED := 650.0       # pointer pixels per second with the stick all the way over
@@ -22,8 +21,6 @@ const SCROLL := 16.0       # wheel steps per second with the right stick all the
 const DEAD := 0.14
 
 static var _plain_hinted := false
-static var _marionette_on := false  # this launch has --marionette, so a click can be checked for a text box
-var _probing := false
 var _ptr := {}             # the virtual mouse + keyboard (python3 + /dev/uinput)
 var _axes := [0.0, 0.0, 0.0, 0.0]
 var _sent := ""
@@ -44,7 +41,7 @@ static func url_for(text: String) -> String:
 		return t
 	if not " " in t and "." in t:
 		return "https://" + t
-	return "https://www.google.com/search?q=" + t.uri_encode()
+	return "https://duckduckgo.com/?q=" + t.uri_encode()
 
 static func running() -> bool:
 	return OS.execute("pgrep", ["-f", PATTERN], []) == 0
@@ -55,13 +52,7 @@ static func game_entry(url: String, plain := false) -> Dictionary:
 	_write_prefs()
 	ensure_adblock()
 	var cmd := [ff, "--kiosk", "--name", "tephra-browser", "--profile", profile_dir()]
-	var page_mode := bool(Settings.get_value("browser_page_mode", true)) and not plain  # plain: a site that may refuse an automated browser (Nexus)
-	_marionette_on = page_mode
-	if page_mode:
-		cmd.append("--marionette")  # lets Page view (page_view.gd) read the page; it also sets navigator.webdriver
 	_forget_tabs()  # closing the browser closes every tab: it always opens fresh
-	if url == "" and page_mode:
-		url = _write_start_page()  # Tephra's own start page; Page view draws it in the theme
 	cmd.append(url if url != "" else HOME_URL)
 	return {"id": ID, "title": "Browser", "cmd": cmd, "browser": true, "plain": plain}
 
@@ -75,19 +66,6 @@ static func _forget_tabs() -> void:
 		var path := dir.path_join(f)
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
-
-## The start page: a few big links, as a plain local page (Page view turns the links into tiles).
-static func _write_start_page() -> String:
-	var path := OS.get_environment("HOME").path_join(".local/share/tephra/browser-start.html")
-	var html := "<!doctype html><html><head><meta charset=utf-8><title>Browser</title></head><body><h1>Where to?</h1><p>Pick a site, or press " + TephraGlyphs.btn("north") + " to type an address or a search.</p>"
-	for s in SITES:
-		html += '<p><a href="%s">%s</a></p>' % [s[1], s[0]]
-	html += '<p><a href="https://en.wikipedia.org">Wikipedia</a></p><p><a href="https://www.reddit.com">Reddit</a></p></body></html>'
-	var f := FileAccess.open(path, FileAccess.WRITE)
-	if f == null:
-		return ""
-	f.store_string(html)
-	return "file://" + path
 
 ## Firefox settings for a console: no first-run pages, no "restore session?" question, no popups about default
 ## browser or updates, links open in the same page (there are no tabs to switch to), DRM video allowed.
@@ -149,7 +127,6 @@ static func _write_prefs() -> void:
 		"browser.newtabpage.enabled": false,
 		"extensions.autoDisableScopes": 0,  # the ad blocker in the profile's extensions folder switches on by itself
 		"extensions.enabledScopes": 15,
-		"marionette.port": 2828,
 		"layout.css.devPixelsPerPx": "\"1.5\"",  # bigger page text, for the TV distance
 	}
 	var lines := PackedStringArray()
@@ -346,41 +323,6 @@ func type_text(text: String, address := false) -> void:
 	if address:
 		_send("key enter")
 
-## After a click: if the page now has a text box in focus, Tephra's keyboard opens for it. Needs the web overlay
-## setting (it is what starts Firefox with Marionette); a short one-off connection asks the page what has focus.
-const FOCUS_JS := "var e=document.activeElement,n=0; while(e&&n++<6){ if(e.shadowRoot&&e.shadowRoot.activeElement){e=e.shadowRoot.activeElement;continue;} if(e.tagName==='IFRAME'||e.tagName==='FRAME'){try{var d=e.contentDocument; if(d&&d.activeElement&&d.activeElement!==d.body){e=d.activeElement;continue;}}catch(x){}} break; } if(!e) return false; if(e.isContentEditable) return true; if(e.tagName==='TEXTAREA') return !e.readOnly; if(e.tagName!=='INPUT') return false; return !e.readOnly && !e.disabled && /^(text|search|email|url|tel|number|password|)$/i.test(e.type||'text');"
-
-## The check runs up to three times after a click (0.3 s, then 0.6 s after each miss): search boxes that slide open (X, YouTube)
-## take focus a moment after the click, and the first try used to find nothing. Each attempt is written to
-## ~/.config/tephra/overlay.log, so a keyboard that doesn't come up shows why (no connection to Firefox, or no text box).
-func _probe_text_field(home, attempt := 0) -> void:
-	if _probing or not _marionette_on:
-		return
-	_probing = true
-	await get_tree().create_timer(0.3 if attempt == 0 else 0.6).timeout  # the click has landed and the page has moved focus
-	var mar: Node = preload("res://marionette.gd").new()
-	add_child(mar)
-	mar.open_session(func(ok: bool) -> void:
-		if not ok:
-			_log("browser: text box check %d: no connection to Firefox (%s)" % [attempt + 1, str(mar.error)])
-			mar.queue_free()
-			_probing = false
-			if attempt < 2:
-				_probe_text_field(home, attempt + 1)
-			return
-		mar.script(FOCUS_JS, [], func(ok2: bool, v) -> void:
-			mar.close()
-			mar.queue_free()
-			_probing = false
-			if ok2 and v == true:
-				if not home.keyboard.is_open and not home._in_overlay:
-					_log("browser: text box in focus (check %d), opening the keyboard" % (attempt + 1))
-					home.browser_keyboard(false)
-			else:
-				_log("browser: text box check %d: %s" % [attempt + 1, "no text box has focus" if ok2 else "the page did not answer (%s)" % str(v)])
-				if attempt < 2:
-					_probe_text_field(home, attempt + 1)))
-
 ## The controller while the browser has the screen. Returns true when the event was used.
 func handle_input(event: InputEvent, home) -> bool:
 	if not _logged_input:
@@ -412,11 +354,9 @@ func handle_input(event: InputEvent, home) -> bool:
 		JOY_BUTTON_A:
 			_send("btn left %d" % int(down))
 			if not down:
-				if _marionette_on:
-					_probe_text_field(home)  # a click on a text box opens Tephra's keyboard
-				elif not _plain_hinted:
+				if not _plain_hinted:
 					_plain_hinted = true
-					home.notify("This site runs without the web overlay, so the keyboard doesn't open by itself. Press Square to type.", "info")
+					home.notify("Press Square to type into a page.", "info")
 		JOY_BUTTON_B:
 			if down:
 				key("back")

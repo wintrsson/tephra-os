@@ -459,9 +459,6 @@ func _process(_delta: float) -> void:
 		var py := clampf(c.position.y - _popup.size.y - 28.0, 20.0, maxf(vp2.y - _popup.size.y - 20.0, 20.0))
 		_popup.position = Vector2(px, py)
 
-func _overlay_row_text() -> String:
-	return "Web overlay: " + ("on" if bool(Settings.get_value("browser_page_mode", true)) else "off")
-
 func _time_text() -> String:
 	return preload("res://settings.gd").clock_text()
 
@@ -784,21 +781,14 @@ func _build_popup_rows() -> void:
 				_popup_box.add_child(st)
 	elif _popup_kind == "browser":
 		if game_id == Browser.ID:
-			if bool(Settings.get_value("browser_page_mode", true)):
-				_add_row("item", "br_page", "Page view")
-			else:
-				_add_row("item", "br_resume", "Back to the page")
+			_add_row("item", "br_resume", "Back to the page")
 			_add_row("item", "br_tabs", "Tabs")
 			_add_row("item", "br_address", "Go to an address or search")
-			_add_row("item", "br_mode", _overlay_row_text())
 			_add_row("item", "br_close", "Close browser")
 		else:
 			for link in get_tree().current_scene.game_links:
 				_add_row("item", "br_open:" + str(link), "From the game: " + str(link).get_slice("://", 1).get_slice("/", 0))
 			_add_row("item", "br_ask", "Go to an address or search")
-			for site in Browser.SITES:
-				_add_row("item", "br_open:" + str(site[1]), str(site[0]))
-			_add_row("item", "br_mode", _overlay_row_text())
 			if game_running:
 				_popup_box.add_child(_note("Quit the game first to open the browser.", 18))
 	elif _popup_kind == "themes":
