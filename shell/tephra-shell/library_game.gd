@@ -38,6 +38,7 @@ var _game := {}
 var _id := ""
 var _cover: Texture2D
 var _color := Color(0.3, 0.6, 0.9)
+var _sky: Gradient            # the backdrop's colours (the light themes take them from the game)
 var _root: Control
 var _glow: ColorRect
 var _art: TextureRect
@@ -104,7 +105,7 @@ func _ready() -> void:
 	bg.color = Themes.c("bg")
 	_root.add_child(bg)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	PageSkin.backdrop(_root)  # each theme's own sky, sun, glow or haze behind the page
+	_sky = PageSkin.backdrop(_root)  # each theme's own sky, sun, glow or haze behind the page
 	# A wash of the game's own colour at the top.
 	_glow = ColorRect.new()
 	_root.add_child(_glow)
@@ -282,7 +283,7 @@ func _label(text: String, size: int, color: Color) -> Label:
 	return l
 
 func _section(text: String) -> Control:
-	var l := _label(text.to_upper(), 22, PageSkin.heading())
+	var l := _label(text.to_upper(), 22, PageSkin.heading(_color))
 	_miami(l, 4)
 	l.add_theme_constant_override("line_spacing", 0)
 	return l
@@ -300,7 +301,7 @@ func open(game: Dictionary, cover: Texture2D) -> void:
 	_art.texture = cover
 	_ensure_cover()
 	_color = _color_of(cover, _id)
-	(_glow.get_meta("wash") as TextureRect).modulate = _color
+	_apply_color()
 	_scroll.scroll_vertical = 0
 	_status.text = ""
 	var dir: String = _lib._home.steam_dir
@@ -328,17 +329,37 @@ func _ensure_cover() -> void:
 	if _cover != null and home.cover_ok(_cover):
 		return
 	var id := _id
+	var recolor := func() -> void:
+		if _id == id:
+			_recolor()
 	var fallback := func() -> void:
 		if _id != id:
 			return
-		home._load_art(id, "header", _art)
+		home._load_art(id, "header", _art, "jpg", recolor)
 	var retry := func() -> void:
 		home._art_fetched.erase(id)
 		await home.prefetch_art(id)
 		if _id != id:
 			return
-		home._load_art(id, "library_600x900", _art, "jpg", Callable(), fallback)
-	home._load_art(id, "library_600x900", _art, "jpg", Callable(), retry)
+		home._load_art(id, "library_600x900", _art, "jpg", recolor, fallback)
+	home._load_art(id, "library_600x900", _art, "jpg", recolor, retry)
+
+## The page colour comes from the picture on show. When the cover is looked up or downloaded after the page opened
+## (so there was none to read at first), this runs once it arrives: otherwise the colours stay a made-up one.
+func _recolor() -> void:
+	if _art == null or _art.texture == null:
+		return
+	_color = _color_of(_art.texture, _id)
+	_apply_color()
+	refresh()  # buttons, section headings and the bar are all drawn with the colour
+
+## Puts the game's colour on the wash at the top and, on the light themes, on the whole sky behind the page.
+func _apply_color() -> void:
+	(_glow.get_meta("wash") as TextureRect).modulate = _color
+	if _sky != null and PageSkin.tints_sky():
+		var sky := PageSkin.sky_colors(_color)
+		_sky.set_color(0, sky[0])
+		_sky.set_color(1, sky[1])
 
 func close() -> void:
 	if not is_open:
@@ -521,6 +542,12 @@ func _refresh_hints() -> void:
 
 # ---------- Colour ----------
 func _color_of(tex: Texture2D, id: String) -> Color:
+	return cover_color(tex, id)
+
+## The colour a cover is mostly about: bright, colourful pixels vote for their hue, the hue with the most votes wins,
+## and the colour is the average of the pixels in it. (Averaging all the pixels together turned a red and teal cover
+## into green.) A cover that is nearly grey, or has no picture, gets a colour made from the game's number.
+static func cover_color(tex: Texture2D, id: String) -> Color:
 	var fallback := Color.from_hsv(float(hash(id) % 360) / 360.0, 0.62, 0.92)
 	if tex == null:
 		return fallback
@@ -531,15 +558,40 @@ func _color_of(tex: Texture2D, id: String) -> Color:
 	if img.is_compressed():
 		if img.decompress() != OK:
 			return fallback
-	img.resize(12, 12, Image.INTERPOLATE_BILINEAR)
+	img.resize(16, 24, Image.INTERPOLATE_BILINEAR)
+	const BINS := 24
+	var votes := PackedFloat32Array()
+	votes.resize(BINS)
+	var sums: Array = []
+	for _i in BINS:
+		sums.append(Vector3.ZERO)
+	var total := 0.0
+	for y in 24:
+		for x in 16:
+			var c := img.get_pixel(x, y)
+			var w := c.s * c.s * c.v   # colourful and bright counts most; grey and dark pixels hardly vote
+			if w < 0.02:
+				continue
+			var bin := int(c.h * BINS) % BINS
+			votes[bin] += w
+			sums[bin] += Vector3(c.r, c.g, c.b) * w
+			total += w
+	if total <= 0.0:
+		return fallback
+	# The winning hue, counting its two neighbours so one hue split across a bin edge is not lost.
+	var best := 0
+	var best_v := -1.0
+	for i in BINS:
+		var v := votes[i] + 0.5 * (votes[(i + 1) % BINS] + votes[(i + BINS - 1) % BINS])
+		if v > best_v:
+			best_v = v
+			best = i
 	var sum := Vector3.ZERO
 	var wsum := 0.0
-	for y in 12:
-		for x in 12:
-			var c := img.get_pixel(x, y)
-			var w := c.s * c.v + 0.02   # colourful, bright pixels count most
-			sum += Vector3(c.r, c.g, c.b) * w
-			wsum += w
+	for d in [-1, 0, 1]:
+		var j: int = (best + d + BINS) % BINS
+		sum += sums[j]
+		wsum += votes[j]
 	if wsum <= 0.0:
 		return fallback
 	var avg := Color(sum.x / wsum, sum.y / wsum, sum.z / wsum)

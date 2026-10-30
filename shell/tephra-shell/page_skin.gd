@@ -34,13 +34,14 @@ static func button(on: bool, primary: bool, tint: Color, danger := false) -> Sty
 			sb.set_corner_radius_all(2)
 		"frutiger":
 			# Glossy glass pills: a bright rim on top, a soft blue shadow under.
-			sb.bg_color = sel if on else (tint.lightened(0.25) if primary else Color(1, 1, 1, 0.55))
+			# The chosen one is the game's colour at full strength (not the theme's blue), the others are paler.
+			sb.bg_color = tint.lightened(0.05) if on else (tint.lightened(0.35) if primary else Color(1, 1, 1, 0.55))
 			sb.border_color = Color(1, 1, 1, 0.95)
 			sb.border_width_top = 3
 			sb.border_width_left = 1
 			sb.border_width_right = 1
 			sb.border_width_bottom = 1
-			sb.shadow_color = Color(0.1, 0.4, 0.7, 0.35 if on else 0.18)
+			sb.shadow_color = Color(tint.darkened(0.3), 0.5) if on else Color(0.1, 0.4, 0.7, 0.18)
 			sb.shadow_size = 14 if on else 6
 			sb.shadow_offset = Vector2(0, 4)
 			sb.set_corner_radius_all(40)
@@ -204,11 +205,13 @@ static func bar_radius() -> float:
 	return 12.0
 
 ## Section headings ("STORAGE", "ABOUT"): each theme's own accent.
-static func heading() -> Color:
+static func heading(tint := Color(0, 0, 0, 0)) -> Color:
 	match Themes.id():
 		"neon":
 			return Color("FF2E88")
-		"ps2", "wave", "frutiger", "channels":
+		"frutiger":
+			return tint.darkened(0.45) if tint.a > 0.0 else Themes.c("select")  # the game's colour, deep enough to read on its pale sky
+		"ps2", "wave", "channels":
 			return Themes.c("select")
 		"volcanic":
 			return Themes.c("glow1")
@@ -227,7 +230,7 @@ static func wash() -> float:
 
 ## The page's backdrop, under everything: the theme's own sky (top colour to bottom colour), plus scanlines and a
 ## sunset strip on Miami, and an ember glow along the bottom on Volcanic.
-static func backdrop(parent: Control) -> void:
+static func backdrop(parent: Control) -> Gradient:
 	var g := Gradient.new()
 	g.set_color(0, Themes.c("bg_top"))
 	g.set_color(1, Themes.c("bg_bottom"))
@@ -256,6 +259,17 @@ static func backdrop(parent: Control) -> void:
 		d.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		d.draw.connect(_extras.bind(d))
 		d.resized.connect(d.queue_redraw)
+	return g
+
+## The light themes (Aero, Channels, Sleek) have a pale sky of their own; on the game page it is made from the
+## game's colour instead (a pastel of it, so the dark words stay readable). The dark themes already get the
+## game's colour from the wash over their top.
+static func tints_sky() -> bool:
+	return Themes.id() in ["frutiger", "channels", "sleek"]
+
+## Top and bottom colours of that sky for a game colour.
+static func sky_colors(c: Color) -> Array:
+	return [c.lerp(Color(1, 1, 1), 0.38), c.lerp(Color(1, 1, 1), 0.84)]
 
 static func _extras(d: Control) -> void:
 	var sz := d.size

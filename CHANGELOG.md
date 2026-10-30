@@ -1,5 +1,10 @@
 # Tephra changelog
 
+## v0.99.76
+- A game's page now takes its colours from the game's cover on every theme. On Aero, Channels and Sleek the whole sky behind the page is a pale version of the cover's colour (it was the theme's own blue and green), and on Aero the chosen button and the section headings use it too.
+- Fix: a game whose cover was fetched after its page opened kept a made-up colour (often green) instead of the cover's. The colours are now worked out again once the cover arrives.
+- The colour is the cover's strongest hue, so a red-and-teal cover is red or teal and not a muddy average.
+
 ## v0.99.75
 - The developer menu is gone. The Tephra logo in the top bar is just a logo now, so the cursor goes Wi-Fi, Bluetooth, controllers, battery, settings, profile.
 - The control center no longer has a Mods card. Mods are still on a game's page (its options menu and its info page), and "Hide Mods" is gone with the menu.
