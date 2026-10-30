@@ -5157,7 +5157,12 @@ func _on_fast_step(dir: Vector2i, n: int) -> void:
 		return  # the right stick moves the keyboard around, it doesn't pick keys
 	if _channels_active():
 		return  # on the Channels Home the right stick flips pages instead (channels.gd)
-	_on_step(dir, n)
+	# Not one jump of n items: n single steps a moment apart, so the selection glides over each item and
+	# the animation plays every time (a stick held over repeats this every FAST_REPEAT seconds).
+	for i in n:
+		_on_step(dir, 1)
+		if i < n - 1:
+			await get_tree().create_timer(0.03).timeout
 
 ## The Channels Home is showing and nothing is open on top of it.
 func _channels_active() -> bool:

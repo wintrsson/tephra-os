@@ -1,5 +1,8 @@
 # Tephra changelog
 
+## v0.99.82
+- The right stick no longer snaps a few games at a time. It now goes through them one by one, very quickly, so the selection glides over each game instead of jumping.
+
 ## v0.99.81
 - The on-screen keyboard over the browser no longer shades or darkens the page behind it, so you can see clearly where you're typing.
 
