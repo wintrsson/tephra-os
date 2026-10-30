@@ -4267,7 +4267,7 @@ func _overlay_open(mode: String) -> void:
 		launch_overlay.visible = false
 		launch_overlay.modulate.a = 0.0
 	launch_art.texture = tex
-	launch_art.modulate = Color(0.78, 0.8, 0.84, 1.0)  # a touch darker, so the cards stand out
+	launch_art.modulate = Color.WHITE if mode == "kbd" else Color(0.78, 0.8, 0.84, 1.0)  # a touch darker so the cards stand out; the page behind the keyboard stays as it is
 	launch_art.visible = tex != null
 	launch_label.text = ""
 	launch_hint.visible = false
@@ -7059,7 +7059,7 @@ func browser_keyboard(address: bool) -> void:
 		await _overlay_close()
 		await get_tree().create_timer(0.4).timeout
 		if t != "":
-			browser.type_text(t, address))
+			browser.type_text(t, address), {"max_len": 400, "clear": true})
 
 # ---------- Volume in steps of 5 ----------
 ## Whatever changes the volume (headphone buttons, a volume dial, media keys, another app), it is put on the next step of
@@ -7299,7 +7299,7 @@ func _browser_tabs_done(action: String, index: int) -> void:
 			await _overlay_close()
 			await get_tree().create_timer(0.4).timeout
 			if t != "":
-				browser.new_tab(Browser.url_for(t)))
+				browser.new_tab(Browser.url_for(t)), {"max_len": 400, "clear": true})
 		return
 	if action == "":
 		_overlay_close()

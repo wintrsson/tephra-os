@@ -1,5 +1,8 @@
 # Tephra changelog
 
+## v0.99.81
+- The on-screen keyboard over the browser no longer shades or darkens the page behind it, so you can see clearly where you're typing.
+
 ## v0.99.80
 - The web overlay is gone. The Browser card now opens plain Firefox that you drive with the controller: stick for the pointer, Cross to click, Square to type. The YouTube, Netflix, Twitch and Google shortcuts and the "Web overlay" switch are removed; use "Go to an address or search" (searches use DuckDuckGo).
 - The repository ignores browser tabs, cookies and desktop session files, so none of them can be added by accident.

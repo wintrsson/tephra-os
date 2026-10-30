@@ -62,6 +62,9 @@ var _del_dev := -1           # device whose delete button is held (-1 = none)
 var _del_t := 0.0
 var _del_next := 0.0
 
+## The shade behind the keyboard; opts "clear" removes it, so the page being typed into stays fully visible.
+var _dim: ColorRect
+
 func _ready() -> void:
 	layer = 98  # above the control center (95) and notifications (97), below the boot logo (100)
 	_root = Control.new()
@@ -71,6 +74,7 @@ func _ready() -> void:
 	_root.modulate.a = 0.0
 	add_child(_root)
 	var dim := ColorRect.new()
+	_dim = dim
 	dim.color = Themes.dim(0.18)  # light, so the screen behind (and the text box being filled) stays visible
 	dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(dim)
@@ -152,6 +156,7 @@ func open(title: String, initial := "", secret := false, done := Callable(), opt
 	_min_len = int(opts.get("min_len", 0))
 	_max_len = int(opts.get("max_len", 63))
 	_done = done
+	_dim.visible = not bool(opts.get("clear", false))
 	_style = TephraGlyphs.family if STYLES.has(TephraGlyphs.family) else "ps"
 	_offset = Vector2.ZERO
 	_page = "abc"
