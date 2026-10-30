@@ -87,7 +87,7 @@ func rebuild() -> void:
 	_cats.append({"name": "Profile", "kind": "profile", "items": [
 		{"label": home.profile_name.text if home.profile_name != null and home.profile_name.text != "" else "Player", "sub": "Your profile", "kind": "profile"}]})
 	var set_items: Array = []
-	var tab_subs := ["Updates, time and units", "Resolution, refresh rate, HDR", "Choose a theme", "Volume and devices", "Pads, battery, lightbar", "Motion and readability"]
+	var tab_subs := ["Updates, time, power", "Resolution, refresh rate, HDR", "Choose a theme", "Volume and devices", "Pads, battery, lightbar", "Steam, PS2, achievements", "Motion and readability"]
 	for t in home.settings_screen.TABS.size():
 		set_items.append({"label": str(home.settings_screen.TABS[t]), "sub": tab_subs[t] if t < tab_subs.size() else "", "kind": "settings", "tab": t})
 	set_items.append({"label": "Wi-Fi", "sub": "Networks", "kind": "wifi"})

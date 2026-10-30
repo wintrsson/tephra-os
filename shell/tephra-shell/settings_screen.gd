@@ -27,7 +27,7 @@ var MUTED: Color = Themes.c("muted")
 var SELECT: Color = Themes.c("select")
 
 const Ps2Games = preload("res://ps2_games.gd")
-const TABS := ["System", "Display", "Themes", "Audio", "Controllers", "Accessibility"]
+const TABS := ["System", "Display", "Themes", "Audio", "Controllers", "Games", "Accessibility"]
 const FPS_CAPS := [30, 60, 90, 120, 240, 0, -1]  # 0 = no limit, -1 = variable (no limit, and the screen follows the frame rate)
 const FPS_NAMES := ["30", "60", "90", "120", "240", "∞", "Variable"]
 const AudioFade = preload("res://audio_fade.gd")
@@ -237,35 +237,11 @@ func _definitions() -> Array:
 				{"kind": "toggle", "key": "auto_restart_update", "text": "When an update arrives", "off": "Ask me (restart by hand)", "on": "Restart right away", "default": true},
 				{"kind": "action", "key": "restart", "text": "Restart Tephra"},
 				{"kind": "action", "key": "close", "text": "Close Tephra"},
-				{"kind": "info", "text": "To update: save the new files to Downloads and run install-update.sh. Tephra notices the change by itself."},
 				{"kind": "header", "text": "Time and units"},
 				{"kind": "toggle", "key": "clock_24h", "text": "Clock", "off": "12-hour", "on": "24-hour", "default": false},
 				{"kind": "toggle", "key": "temp_c", "text": "Temperature", "off": "Fahrenheit (°F)", "on": "Celsius (°C)", "default": false},
-				{"kind": "header", "text": "Behaviour"},
-				{"kind": "choice", "slider": true, "key": "idle_minutes", "text": "Dim the screen when idle", "values": REST_VALUES, "names": REST_NAMES, "default": 0},
-				{"kind": "toggle", "key": "steam_autoclose", "text": "Close Steam when no game is running", "off": "No", "on": "Yes", "default": true},
-				{"kind": "toggle", "key": "capture_links", "text": "Links from games", "off": "Open in the desktop browser", "on": "Keep out of the desktop browser", "default": true},
-				{"kind": "toggle", "key": "auto_update", "text": "Update games automatically", "off": "No (Steam updates a game when you play it)", "on": "Yes, in the background while you're on Home", "default": true},
-				{"kind": "header", "text": "Games"},
-				{"kind": "toggle", "key": "cross_opens_info", "text": "Pressing a game", "off": "Starts it", "on": "Shows its info first (Play, Unpin, Rename)", "default": false},
-				{"kind": "toggle", "key": "cc_keep_running2", "text": "Game behind the control center", "off": "Paused (frozen)", "on": "Keeps running, with its sound", "default": true},
-				{"kind": "action", "key": "rescan", "text": "Re-scan games"},
-				{"kind": "action", "key": "family_add", "text": "Add a Steam Family member"},
-				{"kind": "info", "text": "Family members added", "value": str(Settings.get_value("family_ids", []).size())},
-				{"kind": "action", "key": "family_clear", "text": "Remove added family members"},
-				{"kind": "action", "key": "close_steam", "text": "Close Steam now"},
-				{"kind": "header", "text": "PS2 games"},
-				{"kind": "info", "text": "Games folder", "value": Ps2Games.games_dir()},
-				{"kind": "info", "text": "PS2 BIOS", "value": "Found" if Ps2Games.has_bios() else "Missing (put your scph*.bin in the folder above)"},
-				{"kind": "action", "key": "ps2_scan", "text": "Scan for PS2 games now"},
-				{"kind": "header", "text": "RetroAchievements"},
-				{"kind": "info", "text": "Signed in as", "value": str(Settings.get_value("ra_user", "")) if str(Settings.get_value("ra_key", "")) != "" else "Not signed in"},
-				{"kind": "action", "key": "ra_user", "text": "Set user name"},
-				{"kind": "action", "key": "ra_key", "text": "Set web API key (retroachievements.org > Settings)"},
-				{"kind": "action", "key": "ra_check", "text": "Check sign-in and sync now"},
-				{"kind": "action", "key": "ra_out", "text": "Sign out"},
-				{"kind": "info", "text": "To earn them in a game, also log in once inside PCSX2 (Settings > Achievements)."},
 				{"kind": "header", "text": "Power"},
+				{"kind": "choice", "slider": true, "key": "idle_minutes", "text": "Dim the screen when idle", "values": REST_VALUES, "names": REST_NAMES, "default": 0},
 				{"kind": "action", "key": "suspend", "text": "Rest mode"},
 				{"kind": "action", "key": "reboot", "text": "Restart PC"},
 				{"kind": "action", "key": "poweroff", "text": "Turn off PC"},
@@ -347,7 +323,8 @@ func _definitions() -> Array:
 				{"kind": "toggle", "key": "guide_swap", "text": "PS / Guide button", "off": "Press: control center  -  Hold: home", "on": "Press: home  -  Hold: control center", "default": false},
 				{"kind": "toggle", "key": "screenshot_btn", "text": "Touchpad click (Share on Xbox)", "off": "Does nothing", "on": "Screenshot (hold: record)", "default": true},
 				{"kind": "toggle", "key": "touchpad_layout", "text": "Touchpad click in games", "off": "Steam's default (Select / Start)", "on": "Off (only Tephra's screenshot)", "default": true},
-				{"kind": "header", "text": "Controllers (P1 is the first to connect; choose one to put it in charge)"},
+				{"kind": "header", "text": "Controllers"},
+				{"kind": "info", "text": "P1 is the first to connect. Choose a controller to put it in charge."},
 				{"kind": "pads"},
 				{"kind": "header", "text": "Sticks"},
 				{"kind": "choice", "slider": true, "key": "deadzone", "text": "Stick dead zone", "values": DEAD_VALUES, "names": DEAD_NAMES, "default": 0.15},
@@ -361,6 +338,33 @@ func _definitions() -> Array:
 				{"kind": "header", "text": "Battery"},
 				{"kind": "toggle", "key": "battery_flash", "text": "Low battery alerts", "off": "Off", "on": "On", "default": true},
 				{"kind": "info", "text": "The controller icon in the top bar is green above 30%, orange at 30% or less and red at 10% or less. When the battery drops to one of those levels the lightbar pulses once in that colour, with a notification if the icon isn't on screen."},
+			]
+		5:
+			# Games: how they start and behave, then Steam, PS2 and RetroAchievements.
+			return [
+				{"kind": "header", "text": "Playing"},
+				{"kind": "toggle", "key": "cross_opens_info", "text": "Pressing a game", "off": "Starts it", "on": "Shows its info first (Play, Unpin, Rename)", "default": false},
+				{"kind": "toggle", "key": "cc_keep_running2", "text": "Game behind the control center", "off": "Paused (frozen)", "on": "Keeps running, with its sound", "default": true},
+				{"kind": "toggle", "key": "capture_links", "text": "Links from games", "off": "Open in the desktop browser", "on": "Keep out of the desktop browser", "default": true},
+				{"kind": "header", "text": "Steam"},
+				{"kind": "toggle", "key": "auto_update", "text": "Update games automatically", "off": "No (Steam updates a game when you play it)", "on": "Yes, in the background while you're on Home", "default": true},
+				{"kind": "toggle", "key": "steam_autoclose", "text": "Close Steam when no game is running", "off": "No", "on": "Yes", "default": true},
+				{"kind": "action", "key": "rescan", "text": "Re-scan games"},
+				{"kind": "action", "key": "close_steam", "text": "Close Steam now"},
+				{"kind": "info", "text": "Family members added", "value": str(Settings.get_value("family_ids", []).size())},
+				{"kind": "action", "key": "family_add", "text": "Add a Steam Family member"},
+				{"kind": "action", "key": "family_clear", "text": "Remove added family members"},
+				{"kind": "header", "text": "PS2 games"},
+				{"kind": "info", "text": "Games folder", "value": Ps2Games.games_dir()},
+				{"kind": "info", "text": "PS2 BIOS", "value": "Found" if Ps2Games.has_bios() else "Missing (put your scph*.bin in the folder above)"},
+				{"kind": "action", "key": "ps2_scan", "text": "Scan for PS2 games now"},
+				{"kind": "header", "text": "RetroAchievements"},
+				{"kind": "info", "text": "Signed in as", "value": str(Settings.get_value("ra_user", "")) if str(Settings.get_value("ra_key", "")) != "" else "Not signed in"},
+				{"kind": "action", "key": "ra_user", "text": "Set user name"},
+				{"kind": "action", "key": "ra_key", "text": "Set web API key (retroachievements.org > Settings)"},
+				{"kind": "action", "key": "ra_check", "text": "Check sign-in and sync now"},
+				{"kind": "action", "key": "ra_out", "text": "Sign out"},
+				{"kind": "info", "text": "To earn them in a game, also log in once inside PCSX2 (Settings > Achievements)."},
 			]
 		_:
 			return [

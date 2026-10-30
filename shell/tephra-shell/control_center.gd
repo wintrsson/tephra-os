@@ -87,7 +87,7 @@ var _popup: PanelContainer
 var _popup_box: VBoxContainer
 var _popup_scroll: ScrollContainer   # holds the rows: when they are taller than the screen has room for, they scroll
 const POPUP_TEXT_W := 400.0          # width of a row's text: longer lines wrap onto more lines, the pop-up grows tall instead of wide
-var _popup_kind := ""    # "", "sound" or "power"
+var _popup_kind := ""    # "", "sound", "brightness", "power"...
 var _popup_rows: Array = []  # each: {"type": "slider"/"item"/"toggle", "action", "text", "node"}
 var _popup_sel := 0
 var _popup_card: Control
@@ -279,6 +279,8 @@ func refresh_hints() -> void:
 			TephraGlyphs.fill(_hints, [["dpad", "Choose"], ["accept", "Select"], ["back", "Close"], ["guide", "Home"]])
 		else:
 			TephraGlyphs.fill(_hints, [["dpad", "Choose"], ["accept", "Select"], ["back", "Close"], ["hold_guide", "Home"]])
+	elif _popup_kind == "brightness":
+		TephraGlyphs.fill(_hints, [["dpad_h", "Brightness"], ["back", "Back"]])
 	elif _popup_kind == "sound":
 		var on_vol := _popup_sel < _popup_rows.size() and str(_popup_rows[_popup_sel]["action"]) == "volume"
 		var items: Array = [["dpad_h", "Volume"]]
@@ -526,6 +528,9 @@ func move(dir: int) -> void:
 	if _popup_kind == "sound":
 		_change_volume(dir)  # Left / Right always change the volume here, whichever row is picked
 		return
+	if _popup_kind == "brightness":
+		_change_brightness(dir)
+		return
 	if _popup_kind != "":
 		return
 	if _cards.is_empty():
@@ -557,14 +562,6 @@ func vertical(dir: int) -> void:
 			refresh_hints()  # A means Mute on the volume row, Select on the others
 		return
 	var e := _bar_edge()
-	if not bar_selected and _sel < _cards.size() and _cards[_sel]["id"] == "brightness":
-		# Up brightens, down darkens; at the end of the range the press goes on to the bar as usual.
-		var at_end := (dir < 0 and _brightness >= 100) or (dir > 0 and _brightness <= BRIGHT_MIN)
-		if _brightness >= 0 and not at_end:
-			_change_brightness(-dir)
-			return
-		if _brightness >= 0 and held:
-			return  # still holding: stop at the end, only a fresh press goes on to the bar
 	if bar_selected:
 		if e.y != 0 and dir == -e.y:
 			_select_bar(false)
@@ -602,6 +599,9 @@ func _activate() -> void:
 			_open_popup("downloads")
 		"volume":
 			_open_popup("sound")
+		"brightness":
+			if _brightness >= 0:
+				_open_popup("brightness")
 		"wifi":
 			_wifi_on = not _wifi_on
 			OS.create_process("nmcli", ["radio", "wifi", "on" if _wifi_on else "off"])
@@ -666,9 +666,10 @@ func _read_backlight() -> void:
 func _change_brightness(step: int) -> void:
 	if _brightness < 0:
 		return
-	_brightness = clampi(_brightness + 10 * step, BRIGHT_MIN, 100)
+	_brightness = clampi(snappedi(_brightness, 5) + 5 * step, BRIGHT_MIN, 100)
 	_bright_ms = Time.get_ticks_msec()
 	_refresh_values()
+	_refresh_popup()
 	_queue_brightness()
 
 # The screen is slow to talk to (and a monitor slower), so send only the latest value once presses settle.
@@ -712,7 +713,9 @@ func _build_popup_rows() -> void:
 		_popup_box.remove_child(c)
 		c.queue_free()
 	_popup_rows = []
-	if _popup_kind == "sound":
+	if _popup_kind == "brightness":
+		_add_row("slider", "brightness", "")
+	elif _popup_kind == "sound":
 		# Kept short: one big volume bar (Left / Right change it from anywhere, A mutes), then the
 		# speakers in use (A switches to the next one) and the microphone, only when there is a choice.
 		_add_row("slider", "volume", "")
@@ -921,6 +924,12 @@ func _refresh_popup() -> void:
 				bar.value = _bar_target()
 			l.text = "Muted" if _muted else ("%d%%" % _vol_pct if _vol_pct >= 0 else "-")
 			icon.texture = Icons.texture(_vol_key(), _vol_svg(), 32)
+		elif action == "brightness":
+			var bbar: ProgressBar = r["bar"]
+			bbar.value = clampf(float(_brightness), 0.0, 100.0)
+			l.text = "%d%%" % _brightness if _brightness >= 0 else "-"
+			var lv := 0 if _brightness <= 25 else (1 if _brightness <= 50 else (2 if _brightness <= 75 else 3))
+			icon.texture = Icons.texture("sunlv%d" % lv, Icons.svg_sun_level(lv), 32)
 		elif action == "sink_next":
 			l.text = _sink_desc()
 			icon.texture = Icons.texture("vol2false", Icons.svg_volume(2, false), 32)

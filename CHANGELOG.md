@@ -1,5 +1,9 @@
 # Tephra changelog
 
+## v0.99.79
+- Brightness in the control center now works like Volume: press A on the card and a small pop-up opens with a bar. Left and Right change it in steps of 5%, Back closes it. Up and Down no longer change brightness.
+- Settings is tidier. System keeps Tephra's updates, time and units, power, help and this PC. Everything about games (how they start, Steam, PS2, RetroAchievements) moved to a new Games tab. "Dim the screen when idle" now sits under Power, and the old "save new files to Downloads" note is gone.
+
 ## v0.99.78
 - Less desktop on the way in: on the first start Tephra turns KDE's own splash screen off and makes the desktop wallpaper plain black, so the moment between the boot picture and Tephra shows black instead of your wallpaper. `uninstall.sh` puts KDE's normal wallpaper and splash back.
 
