@@ -1,5 +1,12 @@
 # Tephra changelog
 
+## v0.99.75
+- The developer menu is gone. The Tephra logo in the top bar is just a logo now, so the cursor goes Wi-Fi, Bluetooth, controllers, battery, settings, profile.
+- The control center no longer has a Mods card. Mods are still on a game's page (its options menu and its info page), and "Hide Mods" is gone with the menu.
+- New: Settings > System > Help, with View Tephra's log, Run first-boot setup again, a switch for showing hidden folders in Files, and clearing the cover art and achievement caches. Restart Tephra, Close Tephra and Re-scan games were already in Settings.
+- Test tools (pretend battery alerts, the fake loading screen, the controller and 3D tests as a menu) are no longer reachable from a menu. Settings > Controllers still has the button test.
+- If you had turned on "Performance info on every screen" or "Keep Tephra under all apps" in the old menu, that setting stays as it was, with no switch to change it now.
+
 ## v0.99.74
 - The PS2 theme is called **Retro**, not BIOS (BIOS already means the PS2 file in Settings).
 

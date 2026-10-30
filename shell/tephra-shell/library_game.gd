@@ -419,7 +419,7 @@ func _build_buttons() -> void:
 	items.append(["rename", "Rename"])
 	if bool(_game.get("ps2", false)) and _lib._home.ps2_has_remake_art(_id):
 		items.append(["art", "Art: Original" if _lib._home.ps2_art_original(_id) else "Art: Remake"])
-	if _installed() and not bool(_game.get("ps2", false)) and not bool(Settings.get_value("hide_mods", false)):  # Developer menu > Hide Mods
+	if _installed() and not bool(_game.get("ps2", false)):
 		items.append(["mods", "Mods"])
 	if _installed() and not bool(_game.get("nonsteam", false)) and not _lib._home.launching:
 		items.append(["uninstall", "Uninstall"])

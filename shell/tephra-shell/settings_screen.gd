@@ -269,6 +269,12 @@ func _definitions() -> Array:
 				{"kind": "action", "key": "suspend", "text": "Rest mode"},
 				{"kind": "action", "key": "reboot", "text": "Restart PC"},
 				{"kind": "action", "key": "poweroff", "text": "Turn off PC"},
+				{"kind": "header", "text": "Help"},
+				{"kind": "action", "key": "view_log", "text": "View Tephra's log"},
+				{"kind": "action", "key": "redo_setup", "text": "Run first-boot setup again"},
+				{"kind": "toggle", "key": "files_show_all", "text": "Files", "off": "Hide system folders", "on": "Show hidden and system folders", "default": false},
+				{"kind": "action", "key": "clear_art", "text": "Clear cover art cache"},
+				{"kind": "action", "key": "clear_ach", "text": "Clear achievement cache"},
 				{"kind": "header", "text": "This PC"},
 			]
 			if _home != null and _home.perf != null:
@@ -918,7 +924,7 @@ func open_info(clock_rect := Rect2()) -> void:
 	open(clock_rect, 0)
 	TephraGlyphs.fill(_hints, [["dpad_v", "Scroll"], ["back", "Back"]], 26)
 
-## Developer menu > View log: opens straight into the log; Back closes the screen.
+## Opens straight into the log (kept for tools and the ui test); Back closes the screen.
 func open_log(clock_rect := Rect2()) -> void:
 	_log_only = true
 	_title.text = "Log"
@@ -1186,6 +1192,19 @@ func _activate() -> void:
 			Haptics.pulse(1.0, 1.0, 0.6)
 		"rescan":
 			_home.refresh_games()
+		"view_log":
+			_show_log(true)
+			await get_tree().process_frame  # the card has its size now: fill it to the bottom
+			if _log_mode:
+				_log_off = maxi(_log_lines.size() - _log_page(), 0)
+				_draw_log()
+		"redo_setup":
+			close()
+			_home.setup_screen.open(0, true)
+		"clear_art":
+			_home.dev_toast("Cleared %d cover images. Restart Tephra to reload them." % _clear_dir("user://art"))
+		"clear_ach":
+			_home.dev_toast("Cleared %d achievement files" % _clear_dir("user://ach"))
 		"family_add":
 			_home.keyboard.open("Steam profile link or ID (7656...)", "", false, func(text: String):
 				var id := preload("res://extra_games.gd").parse_steam_id(text)
@@ -1236,6 +1255,13 @@ func _activate() -> void:
 			_home.apply_theme(str(r["key"]).substr(6))
 		"close":
 			_home.close_tephra()
+
+func _clear_dir(path: String) -> int:
+	var n := 0
+	for f in DirAccess.get_files_at(path):
+		if DirAccess.remove_absolute(ProjectSettings.globalize_path(path + "/" + f)) == OK:
+			n += 1
+	return n
 
 func _is_tab_step(event: InputEvent, left: bool) -> bool:
 	if event is InputEventJoypadButton and event.pressed:

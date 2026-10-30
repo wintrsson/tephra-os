@@ -33,7 +33,9 @@ the programs Tephra calls.
   code run `tools/check.sh` and `tools/ui-test.sh`.
 - No autoload for settings: a script that reads them needs `const Settings = preload("res://settings.gd")`.
   Same for other helpers (Themes, Haptics, Motion...). `tools/check.sh` catches a missing one.
-- The developer menu lives in `top_menu.gd`.
+- There is no developer menu any more. Settings > System > Help has View log, Run first-boot setup again, the Files
+  hidden-folders switch and the cache clears; the test helpers (`dev_battery_test`, `dev_fake_loading`...) remain in `home.gd`
+  for `tools/ui_shot.gd` plans to call.
 - Nothing can be run here (no display or controller), so say "untested on the PC" for behaviour changes.
 
 ## Updates that don't start
@@ -44,7 +46,7 @@ of running fine (`SelfUpdate.mark_healthy`); if it crashes or hangs first, the l
 ## First-boot setup
 `setup.gd`: ten steps (welcome, display and sound, Wi-Fi, Steam, game drives, controllers, weather, theme, controls tour, done), each
 with a way past it. It opens by itself only on a fresh install (`note_fresh_install` looks for Tephra's saved files at the very start;
-a PC that already has them just gets `setup_done`). Developer menu > "Redo first-boot setup" runs it again and keeps all data.
+a PC that already has them just gets `setup_done`). Settings > System > Help > "Run first-boot setup again" runs it again and keeps all data.
 A theme choice restarts the scene, so `setup_active` / `setup_page` in settings bring it back at the same step.
 It can't be skipped (Back on the first step only leaves a Developer-menu run). Changes to refresh rate / frame limit / volume call
 `_notify_change` (big banner on the right plus a green row flash). The Wi-Fi step is its own page (nmcli through `_wifi_*`, workers via

@@ -99,8 +99,8 @@ var phone_screen    # phone_screen.gd: its QR code
 var settings_screen  # settings_screen.gd
 var weather  # weather.gd
 var retro    # retro_ach.gd (RetroAchievements)
-const TOP_ITEMS := ["shard", "wifi", "bt", "pad", "battery", "gear", "profile"]  # left to right in the top bar
-var top_index := 6  # which top-bar item has the focus (index into TOP_ITEMS)
+const TOP_ITEMS := ["wifi", "bt", "pad", "battery", "gear", "profile"]  # left to right in the top bar
+var top_index := 5  # which top-bar item has the focus (index into TOP_ITEMS)
 var batt_wrap: Control      # the laptop battery icon, left of the settings gear (hidden on a desktop)
 var batt_icon: TextureRect
 var batt_pct: Label
@@ -1295,7 +1295,7 @@ func _refresh_all_hints() -> void:
 	_hint_key = _hint_sig()
 	var items: Array = []
 	if profile_focus:
-		items.append(["accept", {"shard": "Developer menu", "wifi": "Wi-Fi", "bt": "Bluetooth", "pad": "Controllers", "battery": "Show / hide percentage", "gear": "Open settings", "profile": "Open profile"}[TOP_ITEMS[top_index]]])
+		items.append(["accept", {"wifi": "Wi-Fi", "bt": "Bluetooth", "pad": "Controllers", "battery": "Show / hide percentage", "gear": "Open settings", "profile": "Open profile"}[TOP_ITEMS[top_index]]])
 		items.append(["dpad_h", "Switch"])
 		items.append(["dpad_v", "Back to games"])
 		items.append(["guide", _guide_label()])
@@ -4887,7 +4887,7 @@ func _open_game_menu(gi_arg := -1) -> void:
 	items.append(["unpin" if on_home(g) else "pin", "Unpin from Home" if on_home(g) else "Pin to Home", false])
 	if not launching:
 		items.append(["rename", "Rename", false])
-	if not bool(g.get("ps2", false)) and not bool(Settings.get_value("hide_mods", false)):
+	if not bool(g.get("ps2", false)):
 		items.append(["mods", "Mods", false])
 	if not launching and not bool(g.get("nonsteam", false)):
 		items.append(["uninstall", "Uninstall", true])
@@ -5165,7 +5165,7 @@ func _on_step(dir: Vector2i, n := 1) -> void:
 		if dir.y > 0:
 			_focus_profile(false)  # back down to the games
 		elif dir.x != 0:
-			var nodes := {"shard": shard_icon, "wifi": wifi_icon, "bt": bt_icon, "pad": pad_wrap, "battery": batt_wrap, "gear": gear_icon, "profile": avatar_rect}
+			var nodes := {"wifi": wifi_icon, "bt": bt_icon, "pad": pad_wrap, "battery": batt_wrap, "gear": gear_icon, "profile": avatar_rect}
 			var ni := top_index
 			for _k in TOP_ITEMS.size():
 				ni = posmod(ni + dir.x, TOP_ITEMS.size())  # round the ends of the bar
@@ -5223,7 +5223,7 @@ func _set_top_index(i: int) -> void:
 var _top_pulse: Tween
 
 func _update_gear() -> void:
-	var icons := {"shard": shard_icon, "wifi": wifi_icon, "bt": bt_icon, "pad": pad_wrap, "battery": batt_wrap, "gear": gear_icon}
+	var icons := {"wifi": wifi_icon, "bt": bt_icon, "pad": pad_wrap, "battery": batt_wrap, "gear": gear_icon}
 	for key in icons:
 		var ic: Control = icons[key]
 		var on: bool = profile_focus and TOP_ITEMS[top_index] == key
@@ -5255,7 +5255,7 @@ func _top_index_for_tile() -> int:
 
 ## The top-bar item closest to this x position on screen.
 func _top_index_near(x: float) -> int:
-	var icons: Array = [shard_icon, wifi_icon, bt_icon, pad_wrap, batt_wrap, gear_icon, avatar_rect]
+	var icons: Array = [wifi_icon, bt_icon, pad_wrap, batt_wrap, gear_icon, avatar_rect]
 	var best := TOP_ITEMS.size() - 1
 	var best_d := INF
 	for i in icons.size():
@@ -5267,7 +5267,7 @@ func _top_index_near(x: float) -> int:
 			best = i
 	return best
 
-## After a menu from the top bar (developer, Wi-Fi, Bluetooth, controllers) closes, the cursor stays on the icon
+## After a menu from the top bar (Wi-Fi, Bluetooth, controllers) closes, the cursor stays on the icon
 ## that opened it; Down goes back to the games, as usual.
 func _on_top_menu_closed() -> void:
 	if profile_focus and not launching:
@@ -5333,8 +5333,6 @@ func _open_profile() -> void:
 			settings_screen.open(r)
 		"profile":
 			profile_screen.open(r)
-		"shard":
-			top_menu.open_menu("dev", shard_icon.get_global_rect())
 		"wifi":
 			top_menu.open_menu("wifi", wifi_icon.get_global_rect())
 		"bt":
@@ -5344,7 +5342,7 @@ func _open_profile() -> void:
 		"battery":
 			_toggle_batt_pct()
 
-## Developer menu > View log: the log viewer lives on the Settings screen.
+## Settings > System > Help > View log: the log viewer lives on the Settings screen.
 func open_log() -> void:
 	var r := clock_label.get_global_rect()
 	r.position.y -= page.position.y

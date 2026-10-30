@@ -1,6 +1,5 @@
 extends CanvasLayer
 ## Small pop-up menus that open under the icons in the top bar:
-##   "dev"  - the Tephra icon: developer tools
 ##   "wifi" - Wi-Fi: on/off, nearby networks, join (with the on-screen keyboard), forget
 ##   "bt"   - Bluetooth: turn on/off, scan, pair and connect devices
 ##   "pad"  - your controllers: battery, priority, vibration, dead zone, lightbar, test
@@ -23,8 +22,6 @@ const VIB_NAMES := ["Off", "Low", "Medium", "High"]
 const LIGHT_MODES := ["theme", "battery", "custom"]
 const LIGHT_NAMES := ["Tephra theme", "Battery level", "Custom colour"]
 
-const GLYPH_CHOICES := ["", "ds5", "ds4", "xbox", "nintendo", "keyboard"]
-const GLYPH_NAMES := ["Auto-detect", "DualSense (PS5)", "DualShock 4 (PS4)", "Xbox", "Nintendo", "Keyboard"]
 
 signal closed
 
@@ -153,34 +150,6 @@ func close() -> void:
 func _definitions() -> Array:
 	var rows: Array = []
 	match kind:
-		"dev":
-			rows.append({"type": "head", "text": "Developer"})
-			var gi := GLYPH_CHOICES.find(str(Settings.get_value("glyph_override", "")))
-			rows.append({"type": "item", "key": "glyphs", "text": "Button glyphs", "value": GLYPH_NAMES[maxi(gi, 0)]})
-			rows.append({"type": "item", "key": "hints", "text": "Button hints", "value": "Shown" if Settings.get_value("show_hints", true) else "Hidden"})
-			rows.append({"type": "item", "key": "dev_overlay", "text": "Performance info on every screen", "value": "On" if Settings.get_value("dev_overlay", false) else "Off"})
-			rows.append({"type": "item", "key": "dev_under", "text": "Keep Tephra under all apps (troubleshooting)", "value": "On" if Settings.get_value("dev_under", false) else "Off"})
-			rows.append({"type": "item", "key": "hide_mods", "text": "Hide Mods (game info button and control center tab)", "value": "Hidden" if Settings.get_value("hide_mods", false) else "Shown"})
-			rows.append({"type": "item", "key": "files_show_all", "text": "Files: show hidden and system folders", "value": "On" if Settings.get_value("files_show_all", false) else "Off"})
-			rows.append({"type": "item", "key": "refresh_all", "text": "Refresh all", "value": ""})
-			rows.append({"type": "item", "key": "view_log", "text": "View log", "value": ""})
-			rows.append({"type": "item", "key": "test_toast", "text": "Test notification", "value": ""})
-			rows.append({"type": "item", "key": "fake_loading", "text": "Fake loading screen", "value": "Shows the loading messages. Back stops it"})
-			var lvl: int = _home.alert.force_level if _home.alert != null else 0
-			rows.append({"type": "item", "key": "battery_low", "text": "Test low battery (orange)", "value": "Flashing" if lvl == 1 else "Off"})
-			rows.append({"type": "item", "key": "battery_crit", "text": "Test critical battery (red)", "value": "Flashing" if lvl == 2 else "Off"})
-			rows.append({"type": "item", "key": "pad_test", "text": "Controller test", "value": ""})
-			rows.append({"type": "item", "key": "scene_test", "text": "3D and particle tests", "value": "Cubes, spheres, particles, animation"})
-			rows.append({"type": "item", "key": "redo_setup", "text": "Redo first-boot setup", "value": ""})
-			rows.append({"type": "item", "key": "phone_test", "text": "Phone link (screenshots)", "value": ""})
-			rows.append({"type": "item", "key": "reduce_flashing", "text": "Gentle alerts (no pulsing)", "value": "On" if Settings.get_value("reduce_flashing", false) else "Off"})
-			rows.append({"type": "item", "key": "show_fps", "text": "Cap frame rate (Tephra window)", "value": _fps_text()})
-			rows.append({"type": "item", "key": "refresh_games", "text": "Re-scan games", "value": ""})
-			rows.append({"type": "item", "key": "clear_art", "text": "Clear cover art cache", "value": ""})
-			rows.append({"type": "item", "key": "clear_ach", "text": "Clear achievement cache", "value": ""})
-			rows.append({"type": "item", "key": "reset_perf", "text": "Reset performance data", "value": ""})
-			rows.append({"type": "item", "key": "show_paths", "text": "Show data folder", "value": ""})
-			rows.append({"type": "item", "key": "restart_tephra", "text": "Restart Tephra", "value": ""})
 		"pad":
 			rows.append({"type": "head", "text": "Controllers"})
 			var list: Array = _home.controllers.list() if _home.controllers != null else []
@@ -403,7 +372,7 @@ func move(dir: Vector2i) -> void:
 				break
 		_sel = i
 		_refresh()
-	elif dir.x != 0 and _rows[_sel]["type"] == "item" and _rows[_sel]["key"] in ["glyphs", "hints", "dev_overlay", "dev_under", "hide_mods", "files_show_all", "menu_backdrop", "wifi_toggle", "bt_toggle", "battery_low", "battery_crit", "pad_priority", "vibration", "deadzone", "lightbar_mode", "reduce_flashing", "show_fps"]:
+	elif dir.x != 0 and _rows[_sel]["type"] == "item" and _rows[_sel]["key"] in ["wifi_toggle", "bt_toggle", "pad_priority", "vibration", "deadzone", "lightbar_mode"]:
 		_activate(dir.x)
 
 func _activate(step := 1) -> void:
@@ -411,49 +380,8 @@ func _activate(step := 1) -> void:
 		return
 	var r: Dictionary = _rows[_sel]
 	match str(r["key"]):
-		"glyphs":
-			var gi := GLYPH_CHOICES.find(str(Settings.get_value("glyph_override", "")))
-			gi = posmod(maxi(gi, 0) + step, GLYPH_CHOICES.size())
-			Settings.set_value("glyph_override", GLYPH_CHOICES[gi])
-			TephraGlyphs.detect()
-			_home._refresh_all_hints()
-			_build()
-		"dev_overlay":
-			Settings.set_value("dev_overlay", not Settings.get_value("dev_overlay", false))
-			_build()
-		"files_show_all":
-			Settings.set_value("files_show_all", not Settings.get_value("files_show_all", false))
-			_build()
-		"hide_mods":
-			Settings.set_value("hide_mods", not Settings.get_value("hide_mods", false))
-			_build()
-		"dev_under":
-			Settings.set_value("dev_under", not Settings.get_value("dev_under", false))
-			_home.apply_under_apps()
-			_build()
-		"hints":
-			Settings.set_value("show_hints", not Settings.get_value("show_hints", true))
-			_home._refresh_all_hints()
-			_build()
-		"menu_backdrop":
-			Settings.set_value("menu_backdrop", "screenshot" if str(Settings.get_value("menu_backdrop", "screenshot")) == "live" else "live")
-			_build()
 		"close_menu":
 			close()
-		"view_log":
-			close()
-			_home.open_log()
-		"test_toast":
-			_home.dev_fake_toast()
-		"fake_loading":
-			close()
-			_home.dev_fake_loading()
-		"battery_low":
-			_home.dev_battery_test(0 if _home.alert.force_level == 1 else 1)
-			_build()
-		"battery_crit":
-			_home.dev_battery_test(0 if _home.alert.force_level == 2 else 2)
-			_build()
 		"pad_pick":
 			Settings.set_value("pad_priority", str(int(r["data"]["slot"])))
 			Haptics.confirm()
@@ -484,43 +412,6 @@ func _activate(step := 1) -> void:
 		"pad_test":
 			close()
 			_home.controller_test.open()
-		"scene_test":
-			close()
-			_home.scene_test.open()
-		"redo_setup":
-			close()
-			_home.setup_screen.open(0, true)
-		"phone_test":
-			close()
-			_home.phone_screen.open("captures")
-		"reduce_flashing":
-			Settings.set_value("reduce_flashing", not Settings.get_value("reduce_flashing", false))
-			_build()
-		"show_fps":
-			if str(Settings.get_value("gpu_mode", "normal")) == "saver":
-				_home.dev_toast("Power saver keeps the frame limit at 30")
-				return
-			var caps := [0, 30, 60, 90, 120, 144, 180, 240]
-			var ci := posmod(maxi(caps.find(Engine.max_fps), 0) + step, caps.size())
-			Engine.max_fps = caps[ci]
-			Settings.set_value("fps_cap", caps[ci])
-			_build()
-		"refresh_all":
-			_home.refresh_everything()
-		"refresh_games":
-			_home.refresh_games()
-			_home.dev_toast("Games re-scanned")
-		"clear_art":
-			_home.dev_toast("Cleared %d cover images. Restart Tephra to reload them." % _clear_dir("user://art"))
-		"clear_ach":
-			_home.dev_toast("Cleared %d achievement files" % _clear_dir("user://ach"))
-		"reset_perf":
-			_home.perf.reset()
-			_home.dev_toast("Performance data reset")
-		"show_paths":
-			_home.dev_toast("Data folder: " + OS.get_user_data_dir())
-		"restart_tephra":
-			_home.restart_tephra()
 		"wifi_toggle":
 			if not _wifi_known:
 				return  # still checking
@@ -560,13 +451,6 @@ func _fps_text() -> String:
 	return "Unlimited" if Engine.max_fps == 0 else "%d fps" % Engine.max_fps
 
 ## Deletes every file in a folder (not the folder). Returns how many were removed.
-func _clear_dir(path: String) -> int:
-	var n := 0
-	for f in DirAccess.get_files_at(path):
-		if DirAccess.remove_absolute(ProjectSettings.globalize_path(path + "/" + f)) == OK:
-			n += 1
-	return n
-
 # ---------- Background work ----------
 # Slow commands (scanning, pairing) run on a worker thread; the result comes back
 # to the main thread through call_deferred.

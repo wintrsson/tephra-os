@@ -359,8 +359,6 @@ func _rebuild_cards() -> void:
 	_drive_count = FilesBrowser.drives().size()
 	_make_card("album")  # screenshots
 	_make_card("files")  # drives and folders; hold A to move things
-	if not bool(Settings.get_value("hide_mods", false)):  # Developer menu > Hide Mods
-		_make_card("mods")  # per-game mod manager
 	_make_card("browser")  # the web: Firefox, driven by the pad
 	if not game_running:
 		_make_card("themes")  # not while a game is open: every screen is rebuilt to change theme
