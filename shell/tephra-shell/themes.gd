@@ -79,7 +79,7 @@ const DATA := {
 	# PS2: black, glowing blue dots and drifting glass cubes, with a plain list of menu words. All
 	# original drawing; it only borrows the feeling of a certain old console's start-up menu.
 	"ps2": {
-		"name": "BIOS", "blurb": "Near-black, blue light and a tumbling ring",
+		"name": "Retro", "blurb": "Near-black, blue light and a tumbling ring",
 		"light": false, "layout": "ps2", "sounds": "tephra", "music": "ps2", "backdrop": "cubes",
 		"bg": Color("000000"), "text": Color("DCEBFF"), "muted": Color("5E7FA8"), "select": Color("2FD0FF"),
 		"on_select": Color("03121C"), "accent": Color("0A2A6B"),

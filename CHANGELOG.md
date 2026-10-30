@@ -1,7 +1,10 @@
 # Tephra changelog
 
+## v0.99.74
+- The PS2 theme is called **Retro**, not BIOS (BIOS already means the PS2 file in Settings).
+
 ## v0.99.73
-- Two themes have new names: Frutiger is now **Aero** and PS2 is now **BIOS**. Nothing about how they look or sound changed, and your chosen theme stays chosen.
+- Two themes have new names: Frutiger is now **Aero** and PS2 is now **BIOS** (renamed again in v0.99.74). Nothing about how they look or sound changed, and your chosen theme stays chosen.
 
 ## v0.99.72
 - Tephra is public at github.com/wintrsson/tephra-os, under the GPL-3.0 licence, with a one-command installer (`install.sh`), an uninstaller and a new README with theme screenshots.
