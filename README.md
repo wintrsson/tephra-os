@@ -1,6 +1,6 @@
 # Tephra
 
-**A console-style, controller-only shell for Linux.** Your PC boots straight into a home screen like a PS5's. Your Steam and PS2 games are there, and everything works with a controller. No desktop, no Steam windows, no popups.
+**A console-style, controller-only shell for Linux.** Your PC boots straight into a home screen like a game console's. Your Steam and PS2 games are there, and everything works with a controller. No desktop, no Steam windows, no popups.
 
 ![Tephra's home screen](docs/home.jpg)
 

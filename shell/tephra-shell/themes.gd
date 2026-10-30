@@ -79,7 +79,7 @@ const DATA := {
 	# PS2: black, glowing blue dots and drifting glass cubes, with a plain list of menu words. All
 	# original drawing; it only borrows the feeling of a certain old console's start-up menu.
 	"ps2": {
-		"name": "PS2", "blurb": "Near-black, blue light and a tumbling ring",
+		"name": "BIOS", "blurb": "Near-black, blue light and a tumbling ring",
 		"light": false, "layout": "ps2", "sounds": "tephra", "music": "ps2", "backdrop": "cubes",
 		"bg": Color("000000"), "text": Color("DCEBFF"), "muted": Color("5E7FA8"), "select": Color("2FD0FF"),
 		"on_select": Color("03121C"), "accent": Color("0A2A6B"),
@@ -92,7 +92,7 @@ const DATA := {
 	},
 	# Frutiger Aero: sky blue and fresh green, glossy glass, water bubbles and sunlight.
 	"frutiger": {
-		"name": "Frutiger", "blurb": "Sky, water, fish, grass and glossy glass",
+		"name": "Aero", "blurb": "Sky, water, fish, grass and glossy glass",
 		"light": true, "layout": "row", "sounds": "aero", "music": "frutiger", "backdrop": "aero",
 		"bg": Color("9ED4F5"), "text": Color("0B3560"), "muted": Color("46739A"), "select": Color("1E9BE8"),
 		"on_select": Color("FFFFFF"), "accent": Color("1B6FB5"),
